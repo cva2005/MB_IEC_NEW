@@ -30,75 +30,6 @@ const char *TAG = "MB_IEC_GTW";
 RTC_DATA_ATTR static bool ota_key = false;
 RTC_DATA_ATTR slave_select_t slave_select = SLAVE_IEC_104_TCP;
 
-#define WIFI_SSID CONFIG_ESP_WIFI_SSID
-#define WIFI_PASS CONFIG_ESP_WIFI_PASSWORD
-#define WIFI_CHANNEL CONFIG_ESP_WIFI_CHANNEL
-#define MAX_STA_CONN CONFIG_ESP_MAX_STA_CONN
-
-static void wifi_event_handler(void *arg, esp_event_base_t event_base,
-							   int32_t event_id, void *event_data)
-{
-	if (event_id == WIFI_EVENT_AP_STACONNECTED)
-	{
-		wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *)event_data;
-		ESP_LOGI(TAG, "station " MACSTR " join, AID=%d",
-				 MAC2STR(event->mac), event->aid);
-	}
-	else if (event_id == WIFI_EVENT_AP_STADISCONNECTED)
-	{
-		wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *)event_data;
-		ESP_LOGI(TAG, "station " MACSTR " leave, AID=%d, reason=%d",
-				 MAC2STR(event->mac), event->aid, event->reason);
-	}
-}
-
-static void wifi_init_softap(void)
-{
-	esp_netif_create_default_wifi_ap();
-
-	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-	ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
-	ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-														ESP_EVENT_ANY_ID,
-														&wifi_event_handler,
-														NULL,
-														NULL));
-	char ser_n[8];
-	sprintf(ser_n, "-%u", RamCfg.SerN);
-	wifi_config_t wifi_config = {
-		.ap = {
-			.ssid = WIFI_SSID,
-			//.ssid_len = strlen(WIFI_SSID),
-			.channel = WIFI_CHANNEL,
-			.password = WIFI_PASS,
-			.max_connection = MAX_STA_CONN,
-#ifdef CONFIG_ESP_WIFI_SOFTAP_SAE_SUPPORT
-			.authmode = WIFI_AUTH_WPA3_PSK,
-			.sae_pwe_h2e = WPA3_SAE_PWE_BOTH,
-#else /* CONFIG_ESP_WIFI_SOFTAP_SAE_SUPPORT */
-			.authmode = WIFI_AUTH_WPA2_PSK,
-#endif
-			.pmf_cfg = {
-				.required = true,
-			},
-		},
-	};
-	strcat((char *)wifi_config.ap.ssid, ser_n);
-	wifi_config.ap.ssid_len = strlen((char *)wifi_config.ap.ssid);
-	if (strlen(WIFI_PASS) == 0)
-	{
-		wifi_config.ap.authmode = WIFI_AUTH_OPEN;
-	}
-
-	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
-	ESP_ERROR_CHECK(esp_wifi_start());
-
-	ESP_LOGI(TAG, "wifi_init_softap finished. SSID:%s password:%s channel:%d",
-			 WIFI_SSID, WIFI_PASS, WIFI_CHANNEL);
-}
-
 void app_main(void)
 {
 	esp_err_t ret = nvs_flash_init();
@@ -144,27 +75,11 @@ void app_main(void)
 			break;
 	}
 	gpio_init();
-	if (!ota_key)
-	{
-		if (is_factory_button())
-		{
-			ota_key = true;
-			prepare_factory_reload();
-			reboot_as_deep_sleep();
-		}
-		if (is_rollback_on())
-		{
-			ota_key = true;
-			if (prepare_rollback())
-				reboot_as_deep_sleep();
-		}
-	}
 	ota_key = false;
 	timer_1ms_init();
+	example_connect();
 	if ((gtw_param_init() == ESP_ERR_NOT_FOUND) || is_web_cfg())
 	{
-		ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
-		wifi_init_softap();
 		webserver_init();
 		webserver_start();
 		while (true)
@@ -220,10 +135,6 @@ void app_main(void)
 			vTaskDelay(pdMS_TO_TICKS(100));
 		}
 	}
-	else
-	{
-		example_connect();
-	}
 	mb_serial_master_register();
 	mb_tcp_master_register();
 	if (slave_select == SLAVE_IEC_101_SERIAL)
@@ -231,8 +142,6 @@ void app_main(void)
 		int conn_iec;
 		if (!is_mb_connect_use(SER1_CONN))
 			conn_iec = SER1_CONN;
-		else if (!is_mb_connect_use(SER2_CONN))
-			conn_iec = SER2_CONN;
 		else
 		{
 			slave_select = SLAVE_IEC_104_TCP;

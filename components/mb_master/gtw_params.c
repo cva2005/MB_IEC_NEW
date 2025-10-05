@@ -643,8 +643,6 @@ int get_param_num(int conn_type)
 {
     if (conn_type == SER1_CONN)
         return ser1_dsc_n;
-    if (conn_type == SER2_CONN)
-        return ser2_dsc_n;
     return eth_dsc_n;
 }
 
@@ -652,8 +650,6 @@ int get_param_first(int conn_type)
 {
     if (conn_type == SER1_CONN)
         return 0;
-    if (conn_type == SER2_CONN)
-        return ser1_dsc_n;
     return ser1_dsc_n + ser2_dsc_n;
 }
 
@@ -661,8 +657,6 @@ mb_parameter_descriptor_t *get_param_desc(int conn_type)
 {
     if (conn_type == SER1_CONN)
         return prm_dsc;
-    if (conn_type == SER2_CONN)
-        return &prm_dsc[ser1_dsc_n];
     return &prm_dsc[ser1_dsc_n + ser2_dsc_n];
 }
 
@@ -696,8 +690,6 @@ bool is_mb_connect_use(int conn_type)
 {
     if (conn_type == SER1_CONN)
         return ser1_dsc_n > 0;
-    if (conn_type == SER2_CONN)
-        return ser2_dsc_n > 0;
     return eth_dsc_n > 0;
 }
 

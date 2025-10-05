@@ -115,13 +115,8 @@ void ser_iec_slave_init(int connect)
 	/* Set UART log level */
 	esp_log_level_set(TAG, ESP_LOG_INFO);
 
-	uart_port_t uart_num = (connect == SER1_CONN) ? CONFIG_UART1_PORT_NUM : CONFIG_UART2_PORT_NUM;
-	int tx_io_num = (connect == SER1_CONN) ? CONFIG_UART1_TXD : CONFIG_UART2_TXD;
-	int rx_io_num = (connect == SER1_CONN) ? CONFIG_UART1_RXD : CONFIG_UART2_RXD;
-	int rts_io_num = (connect == SER1_CONN) ? CONFIG_UART1_RTS : CONFIG_UART2_RTS;
-
 	iec_communication_info_t comm_config = {
-		.ser_opts.port = uart_num,
+		.ser_opts.port = CONFIG_UART1_PORT_NUM,
 		.ser_opts.mode = IEC_MODE_101,
 		.ser_opts.baudrate = B_R[RamCfg.Baud],
 		.ser_opts.parity = P_R[RamCfg.Parity], // ToDo: stop bits/word len ???
@@ -132,14 +127,14 @@ void ser_iec_slave_init(int connect)
 
 	/* Set UART pin nuiec_ers */
 	ESP_ERROR_CHECK(uart_set_pin(
-		uart_num,
-		tx_io_num,
-		rx_io_num,
-		rts_io_num,
+		CONFIG_UART1_PORT_NUM,
+		CONFIG_UART1_TXD,
+		CONFIG_UART1_RXD,
+		CONFIG_UART1_RTS,
 		UART_PIN_NO_CHANGE));
 
 	/* Set UART driver mode to Half Duplex */
-	ESP_ERROR_CHECK(uart_set_mode(uart_num, UART_MODE_RS485_HALF_DUPLEX));
+	ESP_ERROR_CHECK(uart_set_mode(CONFIG_UART1_PORT_NUM, UART_MODE_RS485_HALF_DUPLEX));
 }
 
 void ser_iec_slave_task(void *arg)

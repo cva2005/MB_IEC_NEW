@@ -18,12 +18,8 @@
 #define GPIO_OUTPUT_IO_0    16
 #define GPIO_OUTPUT_IO_1    2
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL << GPIO_OUTPUT_IO_0) | (1ULL << GPIO_OUTPUT_IO_1))
-#define GPIO_INPUT_IO_0     36
-#define GPIO_INPUT_IO_1     39
-#define FACTORY_BUTTON      34
-#define GPIO_INPUT_PIN_SEL  ((1ULL << GPIO_INPUT_IO_0) |\
-                             (1ULL << GPIO_INPUT_IO_1) |\
-                             (1ULL << FACTORY_BUTTON))
+#define CONFIG_BUTTON 35
+#define GPIO_INPUT_PIN_SEL  (1ULL << CONFIG_BUTTON)
 #define DEBOUNCE 100
 
 void gpio_init(void)
@@ -44,28 +40,7 @@ bool is_web_cfg(void)
     int db_count = DEBOUNCE;
     while (db_count--)
     {
-        if (gpio_get_level(GPIO_INPUT_IO_1))
-            return false;
-    }
-    return true;
-}
-
-bool is_factory_button(void)
-{
-    int db_count = DEBOUNCE;
-    while (db_count--)
-    {
-        if (gpio_get_level(FACTORY_BUTTON))
-            return false;
-    }
-    return true;
-}
-bool is_rollback_on(void)
-{
-    int db_count = DEBOUNCE;
-    while (db_count--)
-    {
-        if (gpio_get_level(GPIO_INPUT_IO_0))
+        if (gpio_get_level(CONFIG_BUTTON))
             return false;
     }
     return true;

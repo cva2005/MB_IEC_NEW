@@ -36,7 +36,7 @@ const config_t CfgDefault = {
 	12,			/* K Parameter */
 	8,			/* W Parameter */
 	2404,		/* TCP Port */
-	0x0104A8C0, /* IP Address */
+	0x1001A8C0, /* IP Address */
 	/* IEC 870-5-101 Serial Connection */
 	BAUD_115200, /* Baud Rate */
 	PARITY_ODD,	 /* Parity */
