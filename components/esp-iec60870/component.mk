@@ -1,0 +1,14 @@
+COMPONENT_ADD_INCLUDEDIRS := common/include
+COMPONENT_PRIV_INCLUDEDIRS := common port iec60870 iec60870/ascii iec60870/functions
+COMPONENT_PRIV_INCLUDEDIRS += iec60870/rtu iec60870/tcp iec60870/include
+COMPONENT_PRIV_INCLUDEDIRS += serial_slave/port serial_slave/iec_controller
+COMPONENT_PRIV_INCLUDEDIRS += serial_master/port serial_master/iec_controller
+COMPONENT_PRIV_INCLUDEDIRS += tcp_slave/port tcp_slave/iec_controller
+COMPONENT_PRIV_INCLUDEDIRS += tcp_master/port tcp_master/iec_controller
+COMPONENT_SRCDIRS := common
+COMPONENT_SRCDIRS += iec60870 iec60870/ascii iec60870/functions iec60870/rtu iec60870/tcp
+COMPONENT_SRCDIRS += serial_slave/port serial_slave/iec_controller
+COMPONENT_SRCDIRS += serial_master/port serial_master/iec_controller
+COMPONENT_SRCDIRS += tcp_slave/port tcp_slave/iec_controller
+COMPONENT_SRCDIRS += tcp_master/port tcp_master/iec_controller
+COMPONENT_SRCDIRS += port

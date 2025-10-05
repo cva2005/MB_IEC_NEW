@@ -1,0 +1,168 @@
+menu "IEC 60870-5 configuration"
+
+    config FIEC_LINK_LAYER_BALANCED
+        bool "Enable BALANCED IEC 60870-5 slave/server instance link layer"
+        default n
+        help
+                Enable BALANCED/UNBALANCED IEC 60870-5 slave/server instance link layer.
+
+    config FIEC_TCP_PORT_DEFAULT
+        int "IEC 60870-5 TCP port number"
+        range 0 65535
+        default 2404
+        help
+                IEC 60870-5 default port number used by IEC 60870-5 TCP stack
+
+    config FIEC_TCP_PORT_MAX_CONN
+        int "Maximum allowed connections for TCP stack"
+        range 1 6
+        default 5
+        help
+                Maximum allowed connections number for IEC 60870-5 TCP stack.
+                This is used by IEC 60870-5 master and slave port layer to establish connections.
+                This parameter may decrease performance of IEC 60870-5 stack and can cause
+                increasing of processing time (increase only if absolutely necessary).
+
+    config FIEC_TCP_CONNECTION_TOUT_SEC
+        int "IEC 60870-5 TCP connection timeout"
+        range 1 3600
+        default 20
+        help
+                IEC 60870-5 TCP connection timeout in seconds.
+                Once expired the current connection with the client will be closed
+                and IEC 60870-5 slave will be waiting for new connection to accept.
+
+    config FIEC_MASTER_TIMEOUT_MS_RESPOND
+        int "Slave respond timeout (Milliseconds)"
+        default 150
+        range 50 3000
+        help
+                If master sends a frame which is not broadcast, it has to wait sometime for slave response.
+                if slave is not respond in this time, the master will process timeout error.
+
+    config FIEC_MASTER_DELAY_MS_CONVERT
+        int "Slave conversion delay (Milliseconds)"
+        default 200
+        range 50 400
+        help
+                If master sends a broadcast frame, it has to wait conversion time to delay,
+                then master can send next frame.
+
+    config FIEC_QUEUE_LENGTH
+        int "IEC 60870-5 serial task queue length"
+        range 0 200
+        default 20
+        help
+                IEC 60870-5 serial driver queue length. It is used by event queue task.
+                See the serial driver API for more information.
+
+    config FIEC_PORT_TASK_STACK_SIZE
+        int "IEC 60870-5 port task stack size"
+        range 2048 8192
+        default 4096
+        help
+                IEC 60870-5 port task stack size for rx/tx event processing.
+                It may be adjusted when debugging is enabled (for example).
+
+    config FIEC_SERIAL_BUF_SIZE
+        int "IEC 60870-5 serial task RX/TX buffer size"
+        range 0 2048
+        default 256
+        help
+                IEC 60870-5 serial task RX and TX buffer size for UART driver initialization.
+                This buffer is used for IEC 60870-5 frame transfer. The IEC 60870-5 protocol maximum
+                frame size is 256 bytes. Bigger size can be used for non standard implementations.
+
+    config FIEC_PORT_TASK_PRIO
+        int "IEC 60870-5 port task priority"
+        range 3 23
+        default 10
+        help
+                IEC 60870-5 port data processing task priority.
+                The priority of IEC 60870-5 controller task is equal to (CONFIG_FIEC_PORT_TASK_PRIO - 1).
+
+    choice FIEC_PORT_TASK_AFFINITY
+        prompt "IEC 60870-5 task affinity"
+        default FIEC_PORT_TASK_AFFINITY_CPU0
+        depends on !FREERTOS_UNICORE
+        help
+            Allows setting the core affinity of the IEC 60870-5 controller task, i.e. whether the task is pinned to
+            particular CPU, or allowed to run on any CPU.
+
+        config FIEC_PORT_TASK_AFFINITY_NO_AFFINITY
+            bool "No affinity"
+        config FIEC_PORT_TASK_AFFINITY_CPU0
+            bool "CPU0"
+        config FIEC_PORT_TASK_AFFINITY_CPU1
+            bool "CPU1"
+
+    endchoice
+
+    config FIEC_PORT_TASK_AFFINITY
+        hex
+        default FREERTOS_NO_AFFINITY if FIEC_PORT_TASK_AFFINITY_NO_AFFINITY || FREERTOS_UNICORE
+        default 0x0 if FIEC_PORT_TASK_AFFINITY_CPU0
+        default 0x1 if FIEC_PORT_TASK_AFFINITY_CPU1
+
+    config FIEC_CONTROLLER_SLAVE_ID
+        hex "IEC 60870-5 controller slave ID"
+        range 0 4294967295
+        default 0x00112233
+        depends on FIEC_CONTROLLER_SLAVE_ID_SUPPORT
+        help
+                IEC 60870-5 slave ID value to identify IEC 60870-5 device
+                in the network using <Report Slave ID> command.
+                Most significant byte of ID is used as short device ID and
+                other three bytes used as long ID.
+
+    config FIEC_CONTROLLER_NOTIFY_TIMEOUT
+        int "IEC 60870-5 controller notification timeout (ms)"
+        range 0 200
+        default 20
+        help
+                IEC 60870-5 controller notification timeout in milliseconds.
+                This timeout is used to send notification about accessed parameters.
+
+    config FIEC_CONTROLLER_NOTIFY_QUEUE_SIZE
+        int "IEC 60870-5 controller notification queue size"
+        range 0 200
+        default 20
+        help
+                IEC 60870-5 controller notification queue size.
+                The notification queue is used to get information about accessed parameters.
+
+    config FIEC_CONTROLLER_STACK_SIZE
+        int "IEC 60870-5 controller stack size"
+        range 0 8192
+        default 4096
+        help
+                IEC 60870-5 controller task stack size. The Stack size may be adjusted when
+                debug mode is used which requires more stack size (for example).
+
+    config FIEC_EVENT_QUEUE_TIMEOUT
+        int "IEC 60870-5 stack event queue timeout (ms)"
+        range 0 500
+        default 20
+        help
+                IEC 60870-5 stack event queue timeout in milliseconds. This may help to optimize
+                IEC 60870-5 stack event processing time.
+
+    config FIEC_TIMER_PORT_ENABLED
+        bool "IEC 60870-5 stack use timer for 3.5T symbol time measurement"
+        default y
+        help
+                If this option is set the IEC 60870-5 stack uses timer for T3.5 time measurement.
+                Else the internal UART TOUT timeout is used for 3.5T symbol time measurement.
+
+    config FIEC_TIMER_USE_ISR_DISPATCH_METHOD
+        bool "IEC 60870-5 timer uses ISR dispatch method"
+        default n
+        select ESP_TIMER_SUPPORTS_ISR_DISPATCH_METHOD
+        select UART_ISR_IN_IRAM
+        help
+                If this option is set the IEC 60870-5 stack uses ISR dispatch method
+                to send timeout events from the callback function called from ISR.
+                This option has dependency with the UART_ISR_IN_IRAM option which places UART interrupt
+                handler into IRAM to prevent delays related to processing of UART events.
+
+endmenu
