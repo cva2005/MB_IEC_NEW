@@ -107,7 +107,7 @@
         "esp_wifi_netif.h": "c"
     },
     "idf.flashType": "UART",
-    "idf.portWin": "COM16",
+    "idf.portWin": "COM7",
     "workbench.editor.tabSizing": "fixed",
     "idf.pythonInstallPath": "c:\\sysgcc\\v5.4\\tools\\idf-python\\3.11.2\\python.exe"
 }
