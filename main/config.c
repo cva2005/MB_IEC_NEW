@@ -191,7 +191,7 @@ esp_err_t read_config(void)
 		ESP_LOGI(TAG, "CFG nvs_get_blob error: %d", err);
 		goto write_default;
 	}
-	/*else
+	else
 	{
 		err = init_events_arch(nvs_handle);
 		if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
@@ -200,7 +200,7 @@ esp_err_t read_config(void)
 			ESP_LOGI(TAG, "init_events_arch() error: %d", err);
 			return clear_events_arch();
 		}
-	}*/
+	}
 	uint16_t ser;
 	nvs_get_u16(nvs_handle, "serN", &ser);
 	nvs_close(nvs_handle);
@@ -234,7 +234,7 @@ esp_err_t write_config(void)
 		ESP_LOGI(TAG, "write_config nvs_open error: %d", err);
 		goto err_exit;
 	}
-#if 1
+#if 0
 	err = nvs_erase_all(nvs_handle);
 #else
 	err = nvs_erase_key(nvs_handle, "cfg");

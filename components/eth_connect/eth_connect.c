@@ -9,6 +9,7 @@
 #include "example_common_private.h"
 #include "esp_event.h"
 #include "esp_eth.h"
+#include "esp_netif.h"
 #if CONFIG_ETH_USE_SPI_ETHERNET
 #include "driver/spi_master.h"
 #endif // CONFIG_ETH_USE_SPI_ETHERNET
@@ -29,8 +30,72 @@ static SemaphoreHandle_t s_semph_get_ip6_addrs = NULL;
 static esp_netif_t *eth_start(void);
 static void eth_stop(void);
 
-
 /** Event handler for Ethernet events */
+static void eth_event_handler(void *arg, esp_event_base_t event_base,
+                              int32_t event_id, void *event_data)
+{
+    esp_err_t err;
+    uint8_t mac_addr[6] = {0};
+    esp_netif_ip_info_t ip_info;
+    esp_netif_dns_info_t dns_info;
+    /* we can get the ethernet driver handle from event data */
+    esp_eth_handle_t eth_handle = *(esp_eth_handle_t *)event_data;
+    esp_netif_t *eth_netif = get_example_netif_from_desc(EXAMPLE_NETIF_DESC_ETH);
+
+    switch (event_id)
+    {
+    case ETHERNET_EVENT_CONNECTED:
+        esp_eth_ioctl(eth_handle, ETH_CMD_G_MAC_ADDR, mac_addr);
+        ESP_LOGI(TAG, "Ethernet Link Up");
+        ESP_LOGI(TAG, "Ethernet HW Addr %02x:%02x:%02x:%02x:%02x:%02x",
+                 mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+        break;
+    case ETHERNET_EVENT_DISCONNECTED:
+        ESP_LOGI(TAG, "Ethernet Link Down");
+        break;
+    case ETHERNET_EVENT_START:
+        ESP_LOGI(TAG, "Ethernet Started");
+        if (ESP_OK != (err = esp_netif_dhcps_stop(eth_netif)))
+        {
+            ESP_LOGE(TAG, "eth_event_handler Stop dhcp server Err: %s", esp_err_to_name(err));
+        }
+
+#if (1/* == ETH_STATIC_IP*/)
+        ESP_LOGI(TAG, "eth_event_handler static ip");
+
+        if (ESP_OK != (err = esp_netif_dhcpc_stop(eth_netif)))
+        {
+            ESP_LOGE(TAG, "eth_event_handler Stop dhcp Err: %s", esp_err_to_name(err));
+        }
+
+        ip_info.ip.addr = esp_ip4addr_aton("192.168.1.100");
+        ip_info.netmask.addr = esp_ip4addr_aton("255.255.255.0");
+        ip_info.gw.addr = esp_ip4addr_aton("192.168.1.1");
+        dns_info.ip.u_addr.ip4.addr = esp_ip4addr_aton("192.168.1.1");
+        if (ESP_OK != (err = esp_netif_set_ip_info(eth_netif, &ip_info)))
+        {
+            ESP_LOGE(TAG, "eth_event_handler set ip Err: %s", esp_err_to_name(err));
+        }
+        if (ESP_OK != (err = esp_netif_set_dns_info(eth_netif, ESP_NETIF_DNS_MAIN, &dns_info)))
+        {
+            ESP_LOGE(TAG, "eth_event_handler set dns Err: %s", esp_err_to_name(err));
+        }
+#endif
+#if (1 == ETH_DHCP_IP)
+        ESP_LOGI(TAG, "eth_event_handler dhcp ip");
+        if (ESP_OK != (err = esp_netif_dhcpc_start(eth_netif)))
+        {
+            ESP_LOGE(TAG, "eth_event_handler Start dhcp Err: %s", esp_err_to_name(err));
+        }
+#endif
+        break;
+    case ETHERNET_EVENT_STOP:
+        ESP_LOGI(TAG, "Ethernet Stopped");
+        break;
+    default:
+        break;
+    }
+}
 
 static void eth_on_got_ip(void *arg, esp_event_base_t event_base,
                       int32_t event_id, void *event_data)
@@ -168,6 +233,7 @@ static esp_netif_t *eth_start(void)
     esp_netif_attach(netif, s_eth_glue);
 
     // Register user defined event handers
+    ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &eth_on_got_ip, NULL));
 #ifdef CONFIG_EXAMPLE_CONNECT_IPV6
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ETHERNET_EVENT_CONNECTED, &on_eth_event, netif));
