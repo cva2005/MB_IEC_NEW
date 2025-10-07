@@ -268,6 +268,7 @@ esp_err_t read_config(void);
 esp_err_t write_config(void);
 esp_err_t save_serial_key(uint16_t value);
 esp_err_t write_config_default(void);
+bool is_web_server(void);
 
 #define IEC_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE * 2)
 #define QUEUE_NO_WAIT (0)
