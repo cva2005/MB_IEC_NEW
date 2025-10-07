@@ -19,7 +19,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
-
+#include "webserver.h"
 
 static const char *TAG = "ethernet_connect";
 static SemaphoreHandle_t s_semph_get_ip_addrs = NULL;
@@ -59,35 +59,28 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
         {
             ESP_LOGE(TAG, "eth_event_handler Stop dhcp server Err: %s", esp_err_to_name(err));
         }
+        if (is_web_server())
+        {
+            ESP_LOGI(TAG, "eth_event_handler static ip");
 
-#if (1/* == ETH_STATIC_IP*/)
-        ESP_LOGI(TAG, "eth_event_handler static ip");
+            if (ESP_OK != (err = esp_netif_dhcpc_stop(eth_netif)))
+            {
+                ESP_LOGE(TAG, "eth_event_handler Stop dhcp Err: %s", esp_err_to_name(err));
+            }
 
-        if (ESP_OK != (err = esp_netif_dhcpc_stop(eth_netif)))
-        {
-            ESP_LOGE(TAG, "eth_event_handler Stop dhcp Err: %s", esp_err_to_name(err));
+            ip_info.ip.addr = esp_ip4addr_aton("192.168.3.100");
+            ip_info.netmask.addr = esp_ip4addr_aton("255.255.255.0");
+            ip_info.gw.addr = esp_ip4addr_aton("192.168.3.1");
+            dns_info.ip.u_addr.ip4.addr = esp_ip4addr_aton("192.168.3.1");
+            if (ESP_OK != (err = esp_netif_set_ip_info(eth_netif, &ip_info)))
+            {
+                ESP_LOGE(TAG, "eth_event_handler set ip Err: %s", esp_err_to_name(err));
+            }
+            if (ESP_OK != (err = esp_netif_set_dns_info(eth_netif, ESP_NETIF_DNS_MAIN, &dns_info)))
+            {
+                ESP_LOGE(TAG, "eth_event_handler set dns Err: %s", esp_err_to_name(err));
+            }
         }
-
-        ip_info.ip.addr = esp_ip4addr_aton("192.168.1.100");
-        ip_info.netmask.addr = esp_ip4addr_aton("255.255.255.0");
-        ip_info.gw.addr = esp_ip4addr_aton("192.168.1.1");
-        dns_info.ip.u_addr.ip4.addr = esp_ip4addr_aton("192.168.1.1");
-        if (ESP_OK != (err = esp_netif_set_ip_info(eth_netif, &ip_info)))
-        {
-            ESP_LOGE(TAG, "eth_event_handler set ip Err: %s", esp_err_to_name(err));
-        }
-        if (ESP_OK != (err = esp_netif_set_dns_info(eth_netif, ESP_NETIF_DNS_MAIN, &dns_info)))
-        {
-            ESP_LOGE(TAG, "eth_event_handler set dns Err: %s", esp_err_to_name(err));
-        }
-#endif
-#if (1 == ETH_DHCP_IP)
-        ESP_LOGI(TAG, "eth_event_handler dhcp ip");
-        if (ESP_OK != (err = esp_netif_dhcpc_start(eth_netif)))
-        {
-            ESP_LOGE(TAG, "eth_event_handler Start dhcp Err: %s", esp_err_to_name(err));
-        }
-#endif
         break;
     case ETHERNET_EVENT_STOP:
         ESP_LOGI(TAG, "Ethernet Stopped");

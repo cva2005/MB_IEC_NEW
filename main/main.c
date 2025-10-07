@@ -27,8 +27,13 @@
 #include "arch.h"
 
 const char *TAG = "MB_IEC_GTW";
-RTC_DATA_ATTR static bool ota_key = false;
 RTC_DATA_ATTR slave_select_t slave_select = SLAVE_IEC_104_TCP;
+static bool web_server = false;
+
+bool is_web_server(void)
+{
+	return web_server;
+}
 
 void app_main(void)
 {
@@ -75,10 +80,10 @@ void app_main(void)
 			break;
 	}
 	gpio_init();
-	ota_key = false;
 	timer_1ms_init();
+	web_server = (gtw_param_init() == ESP_ERR_NOT_FOUND) || is_web_cfg();
 	example_connect();
-	if ((gtw_param_init() == ESP_ERR_NOT_FOUND) || is_web_cfg())
+	if (web_server)
 	{
 		webserver_init();
 		webserver_start();

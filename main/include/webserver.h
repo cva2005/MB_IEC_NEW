@@ -17,6 +17,7 @@ void webserver_start(void);
 void clr_rst_state(void);
 reset_state_t get_rst_state(void);
 bool is_reset_time_out(void);
+bool is_web_server(void);
 
 #define SOFT_AP_USE		CONFIG_SOFT_AP_USE
 

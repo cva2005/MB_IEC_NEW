@@ -10,7 +10,7 @@
 
 #define STORAGE_NAMESPACE "storage"
 static const char *TAG = "config.c";
-static const uint16_t VersionNum = 102;
+static const uint16_t VersionNum = 100;
 const config_t CfgDefault = {
 	/* Application Layer */
 	3,			  /* ASDU Address */
@@ -194,7 +194,7 @@ esp_err_t read_config(void)
 	else
 	{
 		err = init_events_arch(nvs_handle);
-		if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
+		if (err != ESP_OK)
 		{
 			nvs_close(nvs_handle);
 			ESP_LOGI(TAG, "init_events_arch() error: %d", err);
@@ -244,7 +244,6 @@ esp_err_t write_config(void)
 		ESP_LOGI(TAG, "nvs_erase error: %d", err);
 		goto err_exit;
 	}
-	//nvs_get_u16(nvs_handle, "serN", &RamCfg.SerN);
 	RamCfg.crc16 = esp_crc16_le(0, (uint8_t const *)&RamCfg, sizeof(config_t) - sizeof(RamCfg.crc16));
 	err = nvs_set_blob(nvs_handle, "cfg", &RamCfg, sizeof(RamCfg));
 	if (err != ESP_OK)
