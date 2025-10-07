@@ -37,6 +37,8 @@ const config_t CfgDefault = {
 	8,			/* W Parameter */
 	2404,		/* TCP Port */
 	0x1001A8C0, /* IP Address */
+	0x00FFFFFF, /* IP Mask */
+	0x0101A8C0, /* Geteway IP */
 	/* IEC 870-5-101 Serial Connection */
 	BAUD_115200, /* Baud Rate */
 	PARITY_ODD,	 /* Parity */
@@ -53,19 +55,15 @@ const config_t CfgDefault = {
 	5000,		  /* Timeout Repead,ms */
 	/* ModBus Serial CH#0/CH#1 */
 	BAUD_115200, /* Baud Rate */
-	BAUD_115200, /* Baud Rate */
-	PARITY_NONE, /* Parity */
 	PARITY_NONE, /* Parity */
 	STOPBITS_1,	 /* Stop Bits */
-	STOPBITS_1,	 /* Stop Bits */
 	DATABITS_8,	 /* Data Bits */
-	DATABITS_8,	 /* Data Bits */
-	MB_RTU,		 /* RTU transmission mode */
 	MB_RTU,		 /* RTU transmission mode */
 	3,			 /* Retry before Timeout set */
 	0,			 /* Initial delay,ms */
 	500,		 /* Responde Timeout,ms */
 	/* ModBus Ethernet */
+	500,		/* Ethernet Responde Timeout,ms */
 	502,		/* TCP Port */
 	502,		/* TCP Port */
 	502,		/* TCP Port */
@@ -82,7 +80,6 @@ const config_t CfgDefault = {
 	0x0F01A8C0, /* IP Address */
 	0x1001A8C0, /* IP Address */
 	0x1101A8C0, /* IP Address */
-	500,		/* Ethernet Responde Timeout,ms */
 	3,			/* Channel Retry */
 	/*  Gateway Configuration Table */
 	0,			/* Configuration table lengt */
@@ -121,6 +118,8 @@ parsed_t ParseTab[PARSE_TAB_LEN] = {
 	cfg_id_make(K),
 	cfg_id_make(W),
 	cfg_id_make(ipAdr),
+	cfg_id_make(ipMsk),
+	cfg_id_make(ipGtw),
 	cfg_id_make(tcpPort),
 	cfg_id_make(Baud),
 	cfg_id_make(Parity),
@@ -128,16 +127,11 @@ parsed_t ParseTab[PARSE_TAB_LEN] = {
 	cfg_id_make(dataBits),
 	cfg_id_make(chRetry),
 	cfg_id_make(tRx),
-	cfg_id_make(mbB0),
-	cfg_id_make(mbB1),
-	cfg_id_make(mbP0),
-	cfg_id_make(mbP1),
-	cfg_id_make(mbS0),
-	cfg_id_make(mbS1),
-	cfg_id_make(mbD0),
-	cfg_id_make(mbD1),
-	cfg_id_make(mbM0),
-	cfg_id_make(mbM1),
+	cfg_id_make(mbBaud),
+	cfg_id_make(mbPrt),
+	cfg_id_make(mbStb),
+	cfg_id_make(mbDtb),
+	cfg_id_make(mbMode),
 	cfg_id_make(mbInDel),
 	cfg_id_make(mbRetry),
 	cfg_id_make(mbRespT),

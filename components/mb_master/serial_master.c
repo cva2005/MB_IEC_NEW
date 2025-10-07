@@ -19,13 +19,13 @@ static esp_err_t serial_master_init(void)
 	// Initialize Modbus controller
 	mb_communication_info_t comm = {
 		.ser_opts.port = CONFIG_UART1_PORT_NUM,
-		.ser_opts.mode = RamCfg.mbM0,
-		.ser_opts.baudrate = B_R[RamCfg.mbB0],
-		.ser_opts.parity = P_R[RamCfg.mbP0],
+		.ser_opts.mode = RamCfg.mbMode,
+		.ser_opts.baudrate = B_R[RamCfg.mbBaud],
+		.ser_opts.parity = P_R[RamCfg.mbPrt],
 		.ser_opts.uid = 0,
 		.ser_opts.response_tout_ms = RamCfg.mbRespT,
-		.ser_opts.data_bits = D_B[RamCfg.mbD0],
-		.ser_opts.stop_bits = S_B[RamCfg.mbS0]};
+		.ser_opts.data_bits = D_B[RamCfg.mbDtb],
+		.ser_opts.stop_bits = S_B[RamCfg.mbStb]};
 
 	esp_err_t err = mbc_master_create_serial(&comm, &master_handle);
 	MB_RETURN_ON_FALSE((master_handle != NULL), ESP_ERR_INVALID_STATE, TAG,

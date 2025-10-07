@@ -79,17 +79,17 @@ function CL(){
 		<tr><th>Eth TCP [e]
 			<th><input type=radio class=chR name=mT id=mbE>
 		<tr><th>Channel
-			<th><select id=idx onchange=ch_id()>
-			<option id=M_0 value=0>#1
-			<option id=M_1 value=1>#2
-			<option id=M_2 value=2 disabled=true>#3
-			<option id=M_3 value=3 disabled=true>#4
-			<option id=M_4 value=4 disabled=true>#5
-			<option id=M_5 value=5 disabled=true>#6
-			<option id=M_6 value=6 disabled=true>#7
-			<option id=M_7 value=7 disabled=true>#8
+			<th><select id=idx onchange=ch_id() disabled=true>
+			<option value=0>#1
+			<option value=1>#2
+			<option value=2>#3
+			<option value=3>#4
+			<option value=4>#5
+			<option value=5>#6
+			<option value=6>#7
+			<option value=7>#8
 		</thead>
-		<tbody><tr><th colspan=2>Common Properties
+		<tbody><tr><td colspan=2 align=center><b>Common Properties
 		<tr><td>Initial Delay, ms
 			<td><input type=number size=6 step=1 min=0 max=30000 name=mbInDel onchange=ch_num(this)>
 		<tr><td>MB Fault Set, ms
@@ -120,16 +120,12 @@ function CL(){
 		<tr><td>Responce Timeout
 			<td><input type=number size=6 step=1 min=10 max=60000 name=eRespT onchange=ch_num(this)>
 		<tr><th colspan=2>ModBus Serial Master
-		<tr><td>Channel
-			<td><select id=cnS onchange=ch_cs()>
-			<option value=0>CH# 1
-			<option value=1>CH# 2
 		<tr><td>Mode
-			<td><select id=mbM onchange=cmM()>
+			<td><select name=mbMode>
 				<option value=0>RTU
 				<option value=1>ASCII
 		<tr><td>Baud Rate
-			<td><select id=mbB onchange=cmB()>
+			<td><select name=mbBaud>
 				<option value=0>1200
 				<option value=1>2400
 				<option value=2>4800
@@ -144,17 +140,17 @@ function CL(){
 				<option value=11>460800
 				<option value=12>921600
 		<tr><td>Parity
-			<td><select id=mbP onchange=cmP()>
+			<td><select name=mbPrt>
 				<option value=0>None
 				<option value=1>Odd
 				<option value=2>Even
 		<tr><td>Stop Bits
-			<td><select id=mbS onchange=cmS()>
+			<td><select name=mbStb>
 				<option value=0>1
 				<option value=1>2
 				<option value=2>1.5
 		<tr><td>Data Bits
-			<td><select id=mbD onchange=cmD()>
+			<td><select name=mbDtb>
 				<option value=0>7
 				<option value=1 selected=selected>8
 		<tr><td>Max. Retry
@@ -176,6 +172,10 @@ function CL(){
 			<td><input type=number size=4 step=1 min=1 max=32 name=W onchange=ch_num(this)>
 		<tr><td>IP Address
 			<td><input type=text size=12 maxlength=15 id=Aip name=ipAdr onkeypress="return is_ip(this,event)">
+		<tr><td>Net Mask
+			<td><input type=text size=12 maxlength=15 id=Amsk name=ipMsk onkeypress="return is_ip(this,event)">
+		<tr><td>Gateway
+			<td><input type=text size=12 maxlength=15 id=Agtw name=ipGtw onkeypress="return is_ip(this,event)">
 		<tr><td>Port
 			<td><input type=number size=5 step=1 min=1024 max=60000 name=tcpPort onchange=ch_num(this)>
 		<tr><th colspan=2>IEC 60870-5-101 Slave
@@ -385,20 +385,17 @@ function pbm(m){$('#oPB').max=m}
 function pbs(s){sv('#oPB',s)}
 function pbt(t){up=1;dp=100/t;pbm(100);pbv(1)}
 const mT=document.querySelectorAll('.chR')
-const gV=(e)=>{s='#cnN';d=0;id=e.target.id
-	if(id=="mbS"){SS=0;s='#cnS';d=1}else{SS=1}
-	$('#M_2').disabled=$('#M_3').disabled=$('#M_4').disabled=
-	$('#M_5').disabled=$('#M_6').disabled=$('#M_7').disabled=d;sv('#idx',nv(s))}
+const gV=(e)=>{d=0;id=e.target.id
+	if(id=="mbS"){SS=0;d=1}else{SS=1}
+	$('#idx').disabled=d}
 mT.forEach(match=>{match.addEventListener('change',gV)})
 $("#selCfg").onchange=function(){
 	const fr=new FileReader()
 	fr.onload=function(){
 		c=jp(this.result);CfgA=jp(c['CfgA'])
 		document.querySelectorAll('input,select').forEach(el=>{
-		if(el.name!="")el.value=c[el.name]});sIP('#Aip')
-		for(i=0;i<8;i++){iP[i]=c['iP'+i];eP[i]=c['eP'+i]}ch_cn()
-		for(i=0;i<2;i++){sM[i]=c['mbM'+i];sB[i]=c['mbB'+i];sP[i]=c['mbP'+i]
-			sS[i]=c['mbS'+i];sD[i]=c['mbD'+i]}ch_cs();show_cfg()}
+		if(el.name!="")el.value=c[el.name]});sIP('#Amsk');sIP('#Aip');sIP('#Agtw')
+		for(i=0;i<8;i++){iP[i]=c['iP'+i];eP[i]=c['eP'+i]}ch_cn();show_cfg()}
 	fr.readAsText(this.files[0])}
 dev,ver
 host=document.location.origin
@@ -445,7 +442,7 @@ oM=function(){
 	}
 	c+='</tbody>';$('#tArc').insertAdjacentHTML("beforeend",c)}
 function ch_pV(){$('#pS').type=$('#pV').checked?"text":"password"}
-ArcT=[],iP=[],eP=[],sM=[],sB=[],sP=[],sS=[],sD=[]
+ArcT=[],iP=[],eP=[]
 function ch_num(o){
 	if(o.value==""){alert("Числовое поле содержит ошибку!");o.value=o.min;o.focus();o.select();return}
 	n=Number(o.value);
@@ -453,8 +450,7 @@ function ch_num(o){
 	+o.min+"..."+o.max);o.value=o.min;o.focus();o.select();return false}return true}
 function ch_cn(){n=nv('#cnN');sv('#ePort',eP[n]);v=iP[n];s=""
 	for(i=0;;){s+=(v>>i)&255;i+=8;if(i==32)break;s+='.'}sv('#eAdr',s)}
-function ch_cs(){n=nv('#cnS');sv('#mbM',sM[n]);sv('#mbB',sB[n]);sv('#mbP',sP[n]);sv('#mbS',sS[n]);sv('#mbD',sD[n])}
-function ch_id(){i=nv('#idx');if(!SS){sv('#cnS',i);ch_cs()}else{sv('#cnN',i);ch_cn()}}
+function ch_id(){i=nv('#idx');if(SS){sv('#cnN',i);ch_cn()}}
 function eIp(){
 	n=nv('#cnN');o=document.form.eAdr
 	ip=new RegExp("(^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})$)","g")
@@ -463,15 +459,12 @@ function eIp(){
 		{alert(o.value+" - недопустимый IP-адрес!");o.focus();o.select();return false}
 	iP[n]=0;for(i=0;i<4;i++){iP[n]<<=8;iP[n]+=Number(p[3-i])}return true}
 function chP(o){if(ch_num(o)){n=nv('#cnN');eP[n]=nv('#ePort')}}
-function cmM(){n=nv('#cnS');sM[n]=nv('#mbM')};function cmB(){n=nv('#cnS');sB[n]=nv('#mbB')}
-function cmP(){n=nv('#cnS');sP[n]=nv('#mbP')};function cmS(){n=nv('#cnS');sS[n]=nv('#mbS')}
-function cmD(){n=nv('#cnS');sD[n]=nv('#mbD')}
 function is_ckey(e){
 	if(e.which===0&&(e.keyCode==35||e.keyCode==36||e.keyCode==37
 		||e.keyCode==39||e.keyCode==45||e.keyCode==46))return true
 	if(e.keyCode==8||e.keyCode==9||e.keyCode==27)return true;return false}
 function sIP(ip){n=nv(ip);s="";for(i=0;;){s+=(n>>i)&255;i+=8;if(i==32)break;s+='.'}sv(ip,s)}
-var nIP
+var nIP,nMSK,nGTW
 function vIP(o){
 	ip=new RegExp("(^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})$)","g")
 	p=o.value.split(".")
@@ -596,14 +589,14 @@ async function ldArc(){
 document.addEventListener('DOMContentLoaded',function(e){
 	form.onsubmit=async(e)=>{
 		e.preventDefault();nIP=vIP(document.form.ipAdr)
-		if(!nIP)return;id=e.submitter.id
+		nMSK=vIP(document.form.ipMsk);nGTW=vIP(document.form.ipGtw)
+		if(!nIP||!nMSK||!nGTW)return;id=e.submitter.id
 		if(id=='sEE'){
 			fd=new FormData(form)
 			if (!confirm("Save Configuration in to Device?"))return
 			fd.delete('mT');fd.delete('SerN');fd.delete('VerFW');fd.append('tLen',js(CfgA.length))
-			fd.set('ipAdr',toInt(nIP));for(i=0;i<8;i++){fd.append('iP'+i,toInt(iP[i]));fd.append('eP'+i,eP[i])}
-			for(i=0;i<2;i++){fd.append('mbB'+i,sB[i]);fd.append('mbP'+i,sP[i]);fd.append('mbS'+i,sS[i])
-				fd.append('mbD'+i,sD[i]);fd.append('mbM'+i,sM[i])}
+			fd.set('ipAdr',toInt(nIP));fd.set('ipMsk',toInt(nMSK));fd.set('ipGtw',toInt(nGTW))
+			for(i=0;i<8;i++){fd.append('iP'+i,toInt(iP[i]));fd.append('eP'+i,eP[i])}
 			resp=await fetch(`${host}/cfg_wr`,{method:'POST',body:js(Object.fromEntries(fd))})
 			if(resp.status!==200)alert('Response Status: '+resp.status)
 			i=CfgA.length
@@ -643,9 +636,8 @@ document.addEventListener('DOMContentLoaded',function(e){
 	loadJson(`${host}/cfg_rd`).then(function(c){
 		document.querySelectorAll('input,select').forEach(el=>{
 			if(el.name!="")el.value=c[el.name]});nIP=nv('#Aip');sIP('#Aip')
+			nMSK=nv('#Amsk');sIP('#Amsk');nGTW=nv('#Agtw');sIP('#Agtw')
 			for(i=0;i<8;i++){iP[i]=Number(c['iP'+i]);eP[i]=c['eP'+i]}ch_cn()
-			for(i=0;i<2;i++){sM[i]=c['mbM'+i];sB[i]=c['mbB'+i];sP[i]=c['mbP'+i]
-				sS[i]=c['mbS'+i];sD[i]=c['mbD'+i]}ch_cs()
 		CfgA.splice(0,CfgA.length);len=c['tLen'];if(len)ldTab(len)
 		ArcT.splice(0,ArcT.length);ldArc();cM()
 		dev=nv('#dev');ver=0.01*nv('#ver');sv('#ver',ver.toFixed(2))
@@ -655,10 +647,9 @@ document.addEventListener('keypress',function(){document.querySelectorAll('input
 		if(c>31&&(c<45||c>57||c==47))return false;return true}
  	})})
 function wC(){
-	fd=new FormData(form);fd.append('tLen',js(CfgA.length));fd.set('ipAdr',toInt(nIP));fd.append('CfgA',js(CfgA))
+	fd=new FormData(form);fd.append('tLen',js(CfgA.length));fd.set('ipAdr',toInt(nIP))
+	fd.append('CfgA',js(CfgA));fd.set('ipMsk',toInt(nMSK));fd.set('ipGtw',toInt(nGTW))
 	for(i=0;i<8;i++){fd.append('iP'+i,toInt(iP[i]));fd.append('eP'+i,eP[i])};fd.delete('mT')
-	for(i=0;i<2;i++){fd.append('mbB'+i,sB[i]);fd.append('mbP'+i,sP[i]);fd.append('mbS'+i,sS[i])
-		fd.append('mbD'+i,sD[i]);fd.append('mbM'+i,sM[i])}
 	fw=new File([js(Object.fromEntries(fd))],$("#dev").value+".GTW",{type:"application/octet-stream"})
 	window.location=(URL||webkitURL).createObjectURL(fw)}
 function rF(){setTimeout(function(){location.reload()},1000)}

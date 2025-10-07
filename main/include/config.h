@@ -188,6 +188,8 @@ typedef struct {
 	uint16_t W;		  	/* W Parameter */
 	uint16_t tcpPort; 	/* TCP Port */
 	uint32_t ipAdr;	  	/* IP Address */
+	uint32_t ipMsk;		/* IP Mask */
+	uint32_t ipGtw;		/* Geteway IP */
 	/* IEC 870-5-101 */
 	uint8_t Baud;		/* Baud Rate */
 	uint8_t Parity;		/* Parity */
@@ -203,20 +205,16 @@ typedef struct {
 	uint32_t tAck;	   /* Timeout for ACK,ms */
 	uint32_t tRep;	   /* Timeout Repead,ms */
 	/* ModBus Serial */
-	uint8_t mbB0;		/* Baud Rate */
-	uint8_t mbB1;		/* Baud Rate */
-	uint8_t mbP0;		/* Parity */
-	uint8_t mbP1;		/* Parity */
-	uint8_t mbS0;		/* Stop Bits */
-	uint8_t mbS1;		/* Stop Bits */
-	uint8_t mbD0;		/* Data Bits */
-	uint8_t mbD1;		/* Data Bits */
-	uint8_t mbM0;		/* Mode of Serial MB */
-	uint8_t mbM1;		/* Mode of Serial MB */
-	uint16_t mbRetry;	/* Channel Retry */
+	uint8_t mbBaud;		/* Baud Rate */
+	uint8_t mbPrt;		/* Parity */
+	uint8_t mbStb;		/* Stop Bits */
+	uint8_t mbDtb;		/* Data Bits */
+	uint8_t mbMode;		/* Mode of Serial MB */
+	uint8_t mbRetry;	/* Channel Retry */
 	uint16_t mbInDel;	/* Initial delay,ms 0-30000 */
 	uint16_t mbRespT;	/* Responde Timeout,ms */
 	/* ModBus Ethernet */
+	uint16_t eRespT;	/* Ethernet Responde Timeout,ms */
 	uint16_t eP0;		/* TCP Port */
 	uint16_t eP1;		/* TCP Port */
 	uint16_t eP2;		/* TCP Port */
@@ -233,8 +231,7 @@ typedef struct {
 	uint32_t iP5;		/* IP Address */
 	uint32_t iP6;		/* IP Address */
 	uint32_t iP7;		/* IP Address */
-	uint16_t eRespT;	/* Ethernet Responde Timeout,ms */
-	uint16_t eRetry;	/* Channel Retry */
+	uint16_t eRetry;	/* Ethernet Channel Retry */
 	/*  Gateway Configuration Table */
 	uint16_t tLen; 		/* Confiure table lengt */
 	table_t CfgA[CFG_MAX_LEN];
@@ -254,7 +251,7 @@ typedef struct {
 	uint8_t size;
 } parsed_t;
 
-#define PARSE_TAB_LEN 		73
+#define PARSE_TAB_LEN 		70
 #define FIRST_DIG			1
 #define PARSE_ARR_LEN		1024
 #define PARSE_BUF_LEN		1280

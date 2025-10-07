@@ -70,15 +70,15 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
         {
             ip_info.ip.addr = esp_ip4addr_aton("192.168.1.100");
             ip_info.gw.addr = esp_ip4addr_aton("192.168.1.1");
+            ip_info.netmask.addr = esp_ip4addr_aton("255.255.255.0");
             dns_info.ip.u_addr.ip4.addr = esp_ip4addr_aton("192.168.1.1");
         }
         else
         {
-            ip_info.gw.addr = (RamCfg.ipAdr & 0x00ffffff) | 0x01000000;
             ip_info.ip.addr = RamCfg.ipAdr;
-            dns_info.ip.u_addr.ip4.addr = ip_info.gw.addr;
+            ip_info.netmask.addr = RamCfg.ipMsk;
+            dns_info.ip.u_addr.ip4.addr = ip_info.gw.addr = RamCfg.ipGtw;
         }
-        ip_info.netmask.addr = esp_ip4addr_aton("255.255.255.0");
         if (ESP_OK != (err = esp_netif_set_ip_info(eth_netif, &ip_info)))
         {
             ESP_LOGE(TAG, "eth_event_handler set ip Err: %s", esp_err_to_name(err));
