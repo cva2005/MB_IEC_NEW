@@ -2,6 +2,9 @@
 #include <esp_crc.h>
 #include <sys/param.h>
 #include <esp_log.h>
+#include "esp_efuse.h"
+#include "esp_efuse_table.h"
+#include "esp_sleep.h"
 #include "config.h"
 #include "esp_system.h"
 #include "nvs_flash.h"
@@ -197,18 +200,30 @@ esp_err_t read_config(void)
 	}
 	uint16_t ser;
 	nvs_get_u16(nvs_handle, "serN", &ser);
+	security_t sec;
+	nvs_get_u64(nvs_handle, "Secur", &sec.dword);
 	nvs_close(nvs_handle);
 	if (RamCfg.crc16 != esp_crc16_le(0, (uint8_t const *)&RamCfg, sizeof(config_t) - sizeof(RamCfg.crc16)))
 	{
 	write_default:
 		return write_config_default();
 	}
-#if 0
-	RamCfg.SerN = 25000;
-#else
 	if (ser > 25000 && ser <= 30000)
+	{
 		RamCfg.SerN = ser;
-#endif
+		security_t mac;
+		mac.dword = 0;
+		ESP_ERROR_CHECK(esp_efuse_read_field_blob(ESP_EFUSE_MAC_FACTORY, mac.byte, MAC_FIELD_LEN));
+		mac.dword ^= SECURITY_MASK;
+		ESP_LOGI(TAG, "Generated Code: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", mac.byte[0], mac.byte[1],
+				mac.byte[2], mac.byte[3], mac.byte[4], mac.byte[5], mac.byte[6], mac.byte[7]);
+		nvs_get_u64(nvs_handle, "Secur", &sec.dword);
+		ESP_LOGI(TAG, "Saved Code: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", sec.byte[0], sec.byte[1],
+				 sec.byte[2], sec.byte[3], sec.byte[4], sec.byte[5], sec.byte[6], sec.byte[7]);
+		if (sec.dword != mac.dword)
+			esp_deep_sleep(20000);
+		ESP_LOGI(TAG, "Security Code Compare True");
+	}
 	RamCfg.VerFW = VersionNum;
 	return ESP_OK;
 }
@@ -272,6 +287,21 @@ esp_err_t save_serial_key(uint16_t value)
 		goto err_exit;
 	}
 	ESP_LOGI(TAG, "Serial: %d Save Complette", value);
+	security_t mac;
+	mac.dword = 0;
+	ESP_ERROR_CHECK(esp_efuse_read_field_blob(ESP_EFUSE_MAC_FACTORY, mac.byte, MAC_FIELD_LEN));
+	ESP_LOGI(TAG, "MAC address: %02x:%02x:%02x:%02x:%02x:%02x", mac.byte[0], mac.byte[1],
+			 mac.byte[2], mac.byte[3], mac.byte[4], mac.byte[5]);
+	mac.dword ^= SECURITY_MASK;
+	ESP_LOGI(TAG, "Security Code: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", mac.byte[0], mac.byte[1],
+			 mac.byte[2], mac.byte[3], mac.byte[4], mac.byte[5], mac.byte[6], mac.byte[7]);
+	err = nvs_set_u64(nvs_handle, "Secur", mac.dword);
+	if (err != ESP_OK)
+	{
+		ESP_LOGI(TAG, "nvs_set_u64 error: %d", err);
+		goto err_exit;
+	}
+	ESP_LOGI(TAG, "Security Code Save Complette");
 	err = nvs_commit(nvs_handle);
 	if (err != ESP_OK)
 	{

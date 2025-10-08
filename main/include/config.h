@@ -245,17 +245,26 @@ typedef struct {
 } config_t;
 #pragma pack()
 
-typedef struct {
-	char* key;
+typedef struct
+{
+	char *key;
 	void *ptr;
 	uint8_t size;
 } parsed_t;
 
-#define PARSE_TAB_LEN 		70
+typedef union
+{
+	uint8_t byte[8];
+	uint64_t dword;
+} security_t;
+
+#define PARSE_TAB_LEN 70
 #define FIRST_DIG			1
 #define PARSE_ARR_LEN		1024
 #define PARSE_BUF_LEN		1280
 #define EEPROM_CONFIG_ADDR	0xfff0
+#define SECURITY_MASK		0x5A5A5A5AA5A5A5A5
+#define MAC_FIELD_LEN 		48
 
 extern config_t RamCfg;
 extern parsed_t ParseTab[PARSE_TAB_LEN];

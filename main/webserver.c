@@ -190,7 +190,7 @@ static esp_err_t cfg_rd_handler(httpd_req_t *req)
 			var = *((uint32_t *)ptr);
 		}
 		p += sprintf(p, "\"%s\":%u,", ParseTab[i].key, var);
-		ESP_LOGI(TAG, "\"%s\":%u,", ParseTab[i].key, var);
+		ESP_LOGD(TAG, "\"%s\":%u,", ParseTab[i].key, var);
 	}
 	p--; // remove last coma
 	*p++ = '}';
