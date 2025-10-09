@@ -12,6 +12,7 @@
 #include "iec_controller.h"
 #include "port_common.h"
 #include "esp_sleep.h"
+#include "gpio_drv.h"
 
 #define MS_IN_SEC 						(1000)
 #define WAIT_CONNECT_MS 				(10)
@@ -294,9 +295,11 @@ void mb_master_operation_func(void)
 				int b_size = 0;
 				set_quality(cid, QUALITY_GOOD);
 				ESP_LOGD(TAG, "get_parameter: id=%d cid=%d dev=%d", id, cid, dev);
+				led_data_tx();
 				esp_err_t get_error = mbc_master_get_parameter(handle, id, data_ptr, &type);
 				if (get_error == ESP_OK)
 				{
+					led_data_rx();
 					clr_mb_error(cid);
 					int elm = get_obj_elm(pid);
 					b_size = pprm->param_size / elm;
@@ -463,6 +466,7 @@ void mb_master_operation_func(void)
 				}
 				else
 				{
+					led_data_off();
 					ESP_LOGE(TAG, "get_parameter: id=%d cid=%d dev=%d error=(0x%x) (%s).",
 							 id, cid, dev, (uint16_t)get_error, esp_err_to_name(get_error));
 					inc_mb_error(cid);
