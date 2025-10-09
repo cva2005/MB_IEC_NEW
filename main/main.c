@@ -28,6 +28,7 @@
 
 const char *TAG = "MB_IEC_GTW";
 RTC_DATA_ATTR slave_select_t slave_select = SLAVE_IEC_104_TCP;
+RTC_DATA_ATTR static bool ota_key = false;
 static bool web_server = false;
 
 bool is_web_server(void)
@@ -49,6 +50,7 @@ void app_main(void)
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
 	reset_state_t reset_state = get_rst_state();
 	clr_rst_state();
+	bool cfg_start = false;
 	switch (reset_state)
 	{
 		case FACTORY_LOAD:
@@ -73,6 +75,11 @@ void app_main(void)
 			ESP_LOGI(TAG, "Clear Events Archive");
 			save_arch_event(CLR_ARC);
 			break;
+		case RST_CFG_START:
+			ESP_LOGI(TAG, "Device in to Configuration Mode");
+			save_arch_event(CFG_MD);
+			cfg_start = true;
+			break;
 		default:
 			if (esp_reset_reason() == ESP_RST_POWERON)
 				read_utc_copy();
@@ -81,7 +88,17 @@ void app_main(void)
 	}
 	gpio_init();
 	timer_1ms_init();
-	web_server = (gtw_param_init() == ESP_ERR_NOT_FOUND) || is_web_cfg();
+	if (!ota_key)
+	{
+		if (is_button_press() && !cfg_start)
+		{
+			ota_key = true;
+			prepare_factory_reload();
+			reboot_as_deep_sleep();
+		}
+	}
+	ota_key = false;
+	web_server = (gtw_param_init() == ESP_ERR_NOT_FOUND) || cfg_start;
 	example_connect();
 	if (web_server)
 	{

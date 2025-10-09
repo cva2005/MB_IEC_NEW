@@ -16,6 +16,7 @@
 #include "freertos/queue.h"
 #include "driver/gpio.h"
 #include "iec_controller.h"
+#include "webserver.h"
 
 #define GPIO_ETH_LED 2
 #define GPIO_RS_LED_RX 23
@@ -24,9 +25,11 @@
 #define CONFIG_BUTTON 35
 #define GPIO_INPUT_PIN_SEL (1ULL << CONFIG_BUTTON)
 #define DEBOUNCE 100
+#define CONFIG_START 10
 
 static bool iec_slave_connected = false;
 static bool rx_led_on = false;
+static bool config = false;
 
 static void led_link(bool state)
 {
@@ -57,6 +60,17 @@ void led_data_off(void)
     gpio_set_level(GPIO_RS_LED_RX, true);
 }
 
+bool is_button_press(void)
+{
+    int db_count = DEBOUNCE;
+    while (db_count--)
+    {
+        if (gpio_get_level(CONFIG_BUTTON))
+            return false;
+    }
+    return true;
+}
+
 static void gpio_task(void *arg)
 {
     uint32_t count = 0;
@@ -82,6 +96,20 @@ static void gpio_task(void *arg)
             else
                 delay = true;
         }
+        if (is_button_press())
+        {
+            count = 0;
+            config = true;
+        }
+        else
+            config = false;
+        if (config)
+        {
+            if (count == CONFIG_START)
+            {
+                start_reset_delay(RST_CFG_START);
+            }
+        }
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
@@ -102,15 +130,4 @@ void gpio_init(void)
     gpio_config(&io_conf);
     led_data_off();
     xTaskCreate(gpio_task, "gpio_task", 2048, NULL, 10, NULL);
-}
-
-bool is_web_cfg(void)
-{
-    int db_count = DEBOUNCE;
-    while (db_count--)
-    {
-        if (gpio_get_level(CONFIG_BUTTON))
-            return false;
-    }
-    return true;
 }

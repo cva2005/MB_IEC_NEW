@@ -2,7 +2,7 @@
 #define _GPOI
 
 void gpio_init(void);
-bool is_web_cfg(void);
+bool is_button_press(void);
 void led_data_rx(void);
 void led_data_tx(void);
 void led_data_off(void);

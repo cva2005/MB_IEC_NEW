@@ -19,6 +19,7 @@ typedef enum
     FW_RLB = 7 << SYS_EVT_SHIFFT,        /* Firmware roll back */
     FW_FCT = 8 << SYS_EVT_SHIFFT,        /* Firmware reset to Factory */
     CFG_DF = 9 << SYS_EVT_SHIFFT,        /* Reset to Default Configuration */
+    CFG_MD = 10 << SYS_EVT_SHIFFT,       /* Load Device in to Configuration Mode */
 } system_event_t;
 
 typedef struct
