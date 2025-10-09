@@ -104,7 +104,8 @@
         "rtc.h": "c",
         "esp_system.h": "c",
         "wifi_apps_private.h": "c",
-        "esp_wifi_netif.h": "c"
+        "esp_wifi_netif.h": "c",
+        "gpio.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM7",

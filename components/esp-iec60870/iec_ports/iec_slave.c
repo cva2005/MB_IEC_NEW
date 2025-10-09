@@ -12,6 +12,7 @@
 #include "iec_tcp_transport.h"
 #include "esp_iec_slave.h"
 #include "config.h"
+#include "gpio_drv.h"
 
 static const char *TAG = "iec_object.slave";
 
@@ -228,8 +229,11 @@ error:
 
 bool iec_slave_is_connected(void)
 {
+    bool state;
     if (slave_select == SLAVE_IEC_104_TCP)
-        return iec_socket_is_connected();
+        state = iec_socket_is_connected();
     else
-        return is_iec_ser_start();
+        state = is_iec_ser_start();
+    set_slave_state_led(state);
+    return state;
 }
