@@ -1,35 +1,22 @@
-Новое железо. GPIO23 к среднему с/д, GPIO9 - U1RXD, GPIO10 - U1TXD, RESET - GPIO35
+Ethernet: уточнить скорость подключения (по возможности установить 100)
+
+Новое железо:
+OUTPUT_PIN:
+#define GPIO_ETH_LED 2
+#define GPIO_RS_LED_RX 4
+#define GPIO_RS_LED_TX 23
+INPUT_PIN:
+#define CONFIG_BUTTON 35
 
 Internal EMAC
 Ethernet PHY Device
-
-RTL8201/SR8201
-SMI MDC GPIO number
-18
-SMI MDIO GPIO number
-5
-PHY Reset GPIO number
-14
-PHY Address
-1
-
-Component config
-Ethernet
-Support ESP32 internal EMAC controller
-
-Support ESP32 internal EMAC controller
-PHY interface
-
+RTL8201/SR8201 (EBT205)
+SMI MDC GPIO number (18)
+SMI MDIO GPIO number (5)
+PHY Reset GPIO number (14)
+PHY Address (1, ?2)
 Reduced Media Independent Interface (RMII)
-RMII clock mode
-Input RMII clock from external
-
-Ethernet DMA buffer size (Byte)
-512
-Amount of Ethernet DMA Rx buffers
-10
-Amount of Ethernet DMA Tx buffers
-10
+RMII clock mode: Input RMII clock from external
 
 Добавить в системный журнал (архив) счетчики ошибок (с возможностью сброса), коннекты 101/104/МВ и их дисконнекты,
 возможно что-то еще...

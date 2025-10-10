@@ -17,16 +17,28 @@
 #include "driver/gpio.h"
 #include "iec_controller.h"
 #include "webserver.h"
+#include "switch_ota.h"
+#include "config.h"
+
+typedef enum
+{
+    RX_ON_ETH_OFF = 0,
+    ETH_ON_RX_OFF = 1,
+    TX_ON_ETH_OFF = 2,
+    ETH_ON_TX_OFF = 3,
+    LED_FULL_CYCLE = 4,
+} led_state_t;
 
 #define GPIO_ETH_LED 2
-#define GPIO_RS_LED_RX 23
-#define GPIO_RS_LED_TX 4
+#define GPIO_RS_LED_RX 4
+#define GPIO_RS_LED_TX 23
 #define GPIO_OUTPUT_PIN_SEL ((1ULL << GPIO_ETH_LED) | (1ULL << GPIO_RS_LED_RX) | (1ULL << GPIO_RS_LED_TX))
 #define CONFIG_BUTTON 35
 #define GPIO_INPUT_PIN_SEL (1ULL << CONFIG_BUTTON)
 #define DEBOUNCE 100
 #define CONFIG_START 10
 
+static const char *TAG = "GPIO Driver";
 static bool iec_slave_connected = false;
 static bool rx_led_on = false;
 static bool config = false;
@@ -75,39 +87,73 @@ static void gpio_task(void *arg)
 {
     uint32_t count = 0;
     bool delay = false;
-    for (;;)
+    led_state_t led_state = RX_ON_ETH_OFF;
+    while (true)
     {
-        if (iec_slave_connected)
+        if (is_web_server())
         {
-            led_link(true);
+            switch (led_state) {
+            case ETH_ON_RX_OFF:
+                gpio_set_level(GPIO_ETH_LED, false);
+                gpio_set_level(GPIO_RS_LED_RX, true);
+                break;
+            case TX_ON_ETH_OFF:
+                gpio_set_level(GPIO_RS_LED_TX, false);
+                gpio_set_level(GPIO_ETH_LED, true);
+                break;
+            case ETH_ON_TX_OFF:
+                gpio_set_level(GPIO_ETH_LED, false);
+                gpio_set_level(GPIO_RS_LED_TX, true);
+                break;
+            default: // RX_ON_ETH_OFF || LED_FULL_CYCLE
+                led_state = RX_ON_ETH_OFF;
+                gpio_set_level(GPIO_RS_LED_RX, false);
+                gpio_set_level(GPIO_ETH_LED, true);
+                break;
+            }
+            led_state++;
         }
         else
         {
-            led_link(count % 4 == false);
-        }
-        count++;
-        if (rx_led_on)
-        {
-            if (delay)
+            if (iec_slave_connected)
             {
-                delay = rx_led_on = false;
-                led_data_off();
+                led_link(true);
             }
             else
-                delay = true;
-        }
-        if (is_button_press())
-        {
-            count = 0;
-            config = true;
-        }
-        else
-            config = false;
-        if (config)
-        {
-            if (count == CONFIG_START)
             {
-                start_reset_delay(RST_CFG_START);
+                led_link(count % 4 == false);
+            }
+            count++;
+            if (rx_led_on)
+            {
+                if (delay)
+                {
+                    delay = rx_led_on = false;
+                    led_data_off();
+                }
+                else
+                    delay = true;
+            }
+            if (is_button_press())
+            {
+                if (!config)
+                {
+                    ESP_LOGI(TAG, "Start Configuration Reset");
+                    count = 0;
+                    config = true;
+                }
+            }
+            else
+                config = false;
+            if (config)
+            {
+                ESP_LOGI(TAG, "Wait Reset Count: %lu", count);
+                if (count == CONFIG_START)
+                {
+                    ESP_LOGI(TAG, "Start Reset Delay");
+                    start_reset_delay(RST_CFG_START);
+                    reboot_as_deep_sleep();
+                }
             }
         }
         vTaskDelay(500 / portTICK_PERIOD_MS);

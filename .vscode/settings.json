@@ -105,7 +105,8 @@
         "esp_system.h": "c",
         "wifi_apps_private.h": "c",
         "esp_wifi_netif.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "ota_ws_update_esp.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM7",
