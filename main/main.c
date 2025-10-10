@@ -93,8 +93,9 @@ void app_main(void)
 		if (is_button_press() && !cfg_start)
 		{
 			ota_key = true;
-			prepare_factory_reload();
-			reboot_as_deep_sleep();
+			ESP_LOGI(TAG, "Factory FW Reload over Button Press");
+			start_reset_delay(FACTORY_LOAD);
+			goto wait_reload;
 		}
 	}
 	ota_key = false;
@@ -106,6 +107,7 @@ void app_main(void)
 		webserver_start();
 		while (true)
 		{
+		wait_reload:
 			if (is_reset_time_out())
 			{
 				esp_err_t err;

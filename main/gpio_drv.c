@@ -175,5 +175,5 @@ void gpio_init(void)
     io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
     led_data_off();
-    xTaskCreate(gpio_task, "gpio_task", 2048, NULL, 10, NULL);
+    xTaskCreate(gpio_task, "gpio_task", 3072, NULL, 10, NULL);
 }
