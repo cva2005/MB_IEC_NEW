@@ -418,8 +418,9 @@ function rdWS(dt){
 	try{obj=jp(dt);ov=obj.value;dl=oDt.byteLength
 	switch(obj.name){case"pLen":pLen=ov;pbv(1);break
 	case"pGet":pbs(ov);soc.send(oDt.subarray(ov,ov+pLen));break
-	case"oEnd":soc.send(js({name:"oRes",value:"1"}));pbt(5);break
-	case"oErr":case"oCnl":oSt=0;pbs(dl)}}
+	case"oEnd":soc.send(js({name:"oRes",value:"1"}))
+	alert('Firmware update Successfully. Device reboting in to Work Mode. Session Close!');break
+	case"oErr":alert('Firmware update Error: '+obj.value);case"oCnl":oSt=0;pbs(dl)}}
 	catch{console.log(dt)}}
 const md=$(".modal")
 cM=function(){md.classList.add("hidden");show_cfg()}
@@ -599,21 +600,22 @@ document.addEventListener('DOMContentLoaded',function(e){
 			fd.set('ipAdr',toInt(nIP));fd.set('ipMsk',toInt(nMSK));fd.set('ipGtw',toInt(nGTW))
 			for(i=0;i<8;i++){fd.append('iP'+i,toInt(iP[i]));fd.append('eP'+i,eP[i])}
 			resp=await fetch(`${host}/cfg_wr`,{method:'POST',body:js(Object.fromEntries(fd))})
-			if(resp.status!==200)alert('Response Status: '+resp.status)
+			if(resp.status!==200){alert('Response Status: '+resp.status);return}
 			i=CfgA.length
 			while(i--){
 				a=[];a=CfgA[i];tb=new FormData();tb.append('CfgA',js(a))
 				resp=await fetch(`${host}/tbl_wr`,{method:'POST',body:js(Object.fromEntries(tb))})
-				if(resp.status!==200)alert('Response Status: '+resp.status)
+				if(resp.status!==200){alert('Response Status: '+resp.status);return}
 			}
+			alert('Command Passed. Configuration saved in the Device.')
 		}else{
-			fd=new FormData()
+			fd=new FormData();ex=0
 			if(id=='clrA'){
 				if(!confirm("Clear Events Archive?"))return
 				fd.append('clrA',js(1));pbt(3)
 			}else if(id=='Rst'){
 				if(!confirm("Reset Device?"))return
-				fd.append('Res',js(1));pbt(2)
+				fd.append('Res',js(1));ex=1
 			}else if(id=='SerN'){
 				if(!confirm("Save Serial Number?"))return
 				fd.append('SerN',js(nv('#dev')));pbt(2)
@@ -625,13 +627,14 @@ document.addEventListener('DOMContentLoaded',function(e){
 				fd.append('dCfg',js(1));pbt(2)
 			}else if(id=='rbFW'){
 				if(!confirm("Roll Back FirmWare?"))return
-				fd.append('rbFW',js(1));pbt(4)
+				fd.append('rbFW',js(1));ex=1
 			}else if(id=='fcFW'){
 				if(!confirm("Load Factory FirmWare?"))return
-				fd.append('fcFW',js(1));pbt(15)
+				fd.append('fcFW',js(1));ex=1
 			}else return
 			resp=await fetch(`${host}/cfg_wr`,{method:'POST',body:js(Object.fromEntries(fd))})
 			if(resp.status!==200)alert('Response Status: '+resp.status)
+			if(ex)alert('Command Passed. Device reboting in to Work Mode. Session Close!')
 		}
 	}
 	loadJson(`${host}/cfg_rd`).then(function(c){

@@ -13,7 +13,8 @@
 
 #define STORAGE_NAMESPACE "storage"
 static const char *TAG = "config.c";
-static const uint16_t VersionNum = 100;
+const char *ProjectName = "MB_IEC_NEW";
+const uint16_t VersionNum = 100;
 const config_t CfgDefault = {
 	/* Application Layer */
 	3,			  /* ASDU Address */
@@ -217,7 +218,6 @@ esp_err_t read_config(void)
 		mac.dword ^= SECURITY_MASK;
 		ESP_LOGI(TAG, "Generated Code: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", mac.byte[0], mac.byte[1],
 				mac.byte[2], mac.byte[3], mac.byte[4], mac.byte[5], mac.byte[6], mac.byte[7]);
-		nvs_get_u64(nvs_handle, "Secur", &sec.dword);
 		ESP_LOGI(TAG, "Saved Code: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", sec.byte[0], sec.byte[1],
 				 sec.byte[2], sec.byte[3], sec.byte[4], sec.byte[5], sec.byte[6], sec.byte[7]);
 		if (sec.dword != mac.dword)
@@ -260,6 +260,10 @@ esp_err_t write_config(void)
 		ESP_LOGI(TAG, "nvs_set_blob error: %d", err);
 		goto err_exit;
 	}
+	uint16_t ser;
+	nvs_get_u16(nvs_handle, "serN", &ser);
+	if (ser > 25000 && ser <= 30000)
+		RamCfg.SerN = ser;
 	err = nvs_commit(nvs_handle);
 	if (err != ESP_OK)
 	{

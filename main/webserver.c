@@ -624,9 +624,14 @@ static esp_err_t ota_ws_handler(httpd_req_t *req)
 		if (ota_start_chunk + ws_pkt.len < ota_size) // read chuk of ota
 		{
 			ret = write_ota_ws(ws_pkt.len, buf); // write chunk of ota
-			if (ret)
+			if (ret != ESP_OK)
 			{
-				ota_error(req, OTA_ERROR, "Error write ota");
+				char *msg;
+				if (ret == ESP_FAIL)
+					msg = "Error write ota";
+				else
+					msg = "Binary File Corrupt!";
+				ota_error(req, OTA_ERROR, msg);
 				goto _recv_ret;
 			}
 			ota_start_chunk += ws_pkt.len;

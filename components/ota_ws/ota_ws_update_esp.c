@@ -9,8 +9,8 @@
 #include "esp_flash_partitions.h"
 #include "esp_partition.h"
 #include "esp_image_format.h"
-
 #include "ota_ws_update_esp.h"
+#include "config.h"
 
 static const char *TAG = "ota_ws_esp";
 
@@ -62,9 +62,6 @@ esp_err_t start_ota_ws(void)
 }
 esp_err_t write_ota_ws(int data_read, uint8_t *ota_write_data)
 {
-    //return ESP_OK; // debug return
-
-
     if (image_header_was_checked == false) // first segment
     {
         esp_app_desc_t new_app_info;
@@ -72,16 +69,26 @@ esp_err_t write_ota_ws(int data_read, uint8_t *ota_write_data)
         {
             // check current version with downloading
             memcpy(&new_app_info, &ota_write_data[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)], sizeof(esp_app_desc_t));
+            ESP_LOGI(TAG, "New firmware project name: %s", new_app_info.project_name);
             ESP_LOGI(TAG, "New firmware version: %s", new_app_info.version);
-
-            image_header_was_checked = true;
+            if (!strcmp(ProjectName, new_app_info.project_name))
+            {
+                if (VersionNum < atoi(new_app_info.version))
+                {
+                    image_header_was_checked = true;
+                    goto write_next;
+                }
+            }
+            ESP_LOGE(TAG, "Binary File Corrupt!");
+            return ESP_ERR_INVALID_VERSION;
         }
         else
         {
             ESP_LOGE(TAG, "Received package is not fit len");
-            return ESP_FAIL;
+            return ESP_ERR_INVALID_SIZE;
         }
     }
+write_next:
     esp_err_t err = esp_ota_write(update_handle, (const void *)ota_write_data, data_read);
     //tstc+=data_read;
     if (err != ESP_OK)

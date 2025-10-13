@@ -22,6 +22,7 @@
 #include "gtw_params.h"
 #include "sdkconfig.h"
 #include "gpio_drv.h"
+#include "ota_ws_update_esp.h"
 #include "esp_ota_ops.h"
 #include "switch_ota.h"
 #include "arch.h"
@@ -70,10 +71,12 @@ void app_main(void)
 		case RST_DEFL_CFG:
 			ESP_LOGI(TAG, "Reset to Default Configuration");
 			save_arch_event(CFG_DF);
+			cfg_start = true;
 			break;
 		case CLR_ARCH_CMD:
 			ESP_LOGI(TAG, "Clear Events Archive");
 			save_arch_event(CLR_ARC);
+			cfg_start = true;
 			break;
 		case RST_CFG_START:
 			ESP_LOGI(TAG, "Device in to Configuration Mode");
@@ -100,7 +103,9 @@ void app_main(void)
 	}
 	ota_key = false;
 	web_server = (gtw_param_init() == ESP_ERR_NOT_FOUND) || cfg_start;
-	example_connect();
+	ESP_ERROR_CHECK(example_connect());
+	if (check_ota_ws_rollback_enable())
+		rollback_ota_ws(false);
 	if (web_server)
 	{
 		webserver_init();

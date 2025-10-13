@@ -269,6 +269,8 @@ typedef union
 extern config_t RamCfg;
 extern parsed_t ParseTab[PARSE_TAB_LEN];
 extern slave_select_t slave_select;
+extern const char *ProjectName;
+extern const uint16_t VersionNum;
 
 esp_err_t read_config(void);
 esp_err_t write_config(void);
