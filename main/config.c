@@ -13,6 +13,8 @@
 
 #define STORAGE_NAMESPACE "storage"
 static const char *TAG = "config.c";
+RTC_DATA_ATTR uint64_t mb_io_count = 0;
+RTC_DATA_ATTR uint64_t mb_err_count = 0;
 const char *ProjectName = "MB_IEC_NEW";
 const uint16_t VersionNum = 100;
 const config_t CfgDefault = {
@@ -94,6 +96,8 @@ const config_t CfgDefault = {
 	100,		/* Delay Between Polls, 0 - 65535 [ms] default - 100 */
 	25000,		/* Serial Number */
 	VersionNum, /* Version FW */
+	0,			/* MB IO count */
+	0,			/* MB Error count */
 	0			/* False of Control Summ */
 };
 
@@ -168,8 +172,10 @@ parsed_t ParseTab[PARSE_TAB_LEN] = {
 	cfg_id_make(tSync),
 	cfg_id_make(tSwith),
 	cfg_id_make(tBetw),
-	cfg_id_make(SerN), // Read Only
-	cfg_id_make(VerFW) // Read Only
+	cfg_id_make(SerN),	// Read Only
+	cfg_id_make(VerFW), // Read Only
+	cfg_id_make(mbIO),	// Read Only
+	cfg_id_make(mbErr)	// Read Only
 };
 
 esp_err_t read_config(void)

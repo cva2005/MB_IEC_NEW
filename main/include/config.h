@@ -241,6 +241,8 @@ typedef struct {
 	uint16_t tBetw;		/* Delay Between Polls, 0 - 65535 [ms] default - 100 */
 	uint16_t SerN;		/* Serial Number of Device [Read Only] */
 	uint16_t VerFW;		/* Version of FirmWare [Read Only] */
+	uint64_t mbIO;		/* MB IO count */
+	uint64_t mbErr;		/* MB Error count */
 	uint16_t crc16;		/* Control Summ */
 } config_t;
 #pragma pack()
@@ -258,7 +260,7 @@ typedef union
 	uint64_t dword;
 } security_t;
 
-#define PARSE_TAB_LEN 70
+#define PARSE_TAB_LEN 		72
 #define FIRST_DIG			1
 #define PARSE_ARR_LEN		1024
 #define PARSE_BUF_LEN		1280
@@ -271,6 +273,8 @@ extern parsed_t ParseTab[PARSE_TAB_LEN];
 extern slave_select_t slave_select;
 extern const char *ProjectName;
 extern const uint16_t VersionNum;
+extern RTC_DATA_ATTR uint64_t mb_io_count;
+extern RTC_DATA_ATTR uint64_t mb_err_count;
 
 esp_err_t read_config(void);
 esp_err_t write_config(void);

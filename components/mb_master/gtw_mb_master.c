@@ -297,6 +297,7 @@ void mb_master_operation_func(void)
 				ESP_LOGD(TAG, "get_parameter: id=%d cid=%d dev=%d", id, cid, dev);
 				led_data_tx();
 				esp_err_t get_error = mbc_master_get_parameter(handle, id, data_ptr, &type);
+				mb_io_count++;
 				if (get_error == ESP_OK)
 				{
 					led_data_rx();
@@ -466,6 +467,7 @@ void mb_master_operation_func(void)
 				}
 				else
 				{
+					mb_err_count++;
 					led_data_off();
 					ESP_LOGE(TAG, "get_parameter: id=%d cid=%d dev=%d error=(0x%x) (%s).",
 							 id, cid, dev, (uint16_t)get_error, esp_err_to_name(get_error));

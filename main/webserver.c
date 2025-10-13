@@ -42,7 +42,7 @@ typedef enum
 #define CDT_ID "cDT"
 
 #define DELAY_BEFORE_RESET 	100
-#define READ_ONLY_PRM 		2
+#define READ_ONLY_PRM 		4
 #define OTA_CHUNK_SIZE 		(0x2000)
 
 static const char * TAG = "webserver";
@@ -176,7 +176,7 @@ static esp_err_t cfg_rd_handler(httpd_req_t *req)
 	*p++ = '{';
 	for (int i = 0; i < PARSE_TAB_LEN; i++)
 	{
-		int var;
+		long var;
 		void *ptr = ParseTab[i].ptr;
 		switch (ParseTab[i].size)
 		{
@@ -186,11 +186,14 @@ static esp_err_t cfg_rd_handler(httpd_req_t *req)
 		case sizeof(uint16_t):
 			var = *((uint16_t *)ptr);
 			break;
-		default: // sizeof(uint32_t)
+		case sizeof(uint32_t):
 			var = *((uint32_t *)ptr);
+			break;
+		default: // sizeof(uint64_t)
+			var = *((uint64_t *)ptr);
 		}
-		p += sprintf(p, "\"%s\":%u,", ParseTab[i].key, var);
-		ESP_LOGD(TAG, "\"%s\":%u,", ParseTab[i].key, var);
+		p += sprintf(p, "\"%s\":%lu,", ParseTab[i].key, var);
+		ESP_LOGD(TAG, "\"%s\":%lu,", ParseTab[i].key, var);
 	}
 	p--; // remove last coma
 	*p++ = '}';
