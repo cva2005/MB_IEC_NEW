@@ -160,6 +160,7 @@ void app_main(void)
 					ESP_LOGI(TAG, "Clear Modbus IO/Error Counts");
 					reset_mb_counts();
 					save_arch_event(CLR_CNT);
+					clr_rst_state();
 				default:
 					goto no_reboot;
 				}

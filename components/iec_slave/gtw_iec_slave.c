@@ -263,7 +263,7 @@ void rawMessageHandler(void *parameter, uint8_t *msg, int msgSize, bool sent)
 
 bool clockSyncHandler(void *parameter, IMasterConnection connection, CS101_ASDU asdu, CP56Time2a newTime)
 {
-	ESP_LOGI(TAG, "Process time sync command with time:");
+	ESP_LOGI(TAG, "Sync command with UTC Time [GMT+00]:");
 	printCP56Time2a(newTime);
 	uint64_t newSystemTimeInMs = CP56Time2a_toMsTimestamp(newTime);
 	/* Set time for ACT_CON message */
