@@ -126,7 +126,7 @@ void app_main(void)
 					if (prepare_rollback() == false)
 					{
 						ESP_LOGE(TAG, "Rollback Firmware Command: Error");
-						goto cmd_false;
+						goto no_reboot;
 					}
 					ESP_LOGI(TAG, "Rollback Firmware Command");
 					break;
@@ -138,7 +138,7 @@ void app_main(void)
 					if (err != ESP_OK)
 					{
 						ESP_LOGE(TAG, "Reset to Default Configuration: Error %d", err);
-						goto cmd_false;
+						goto no_reboot;
 					}
 					ESP_LOGI(TAG, "Reset to Default Command");
 					break;
@@ -147,7 +147,7 @@ void app_main(void)
 					if (err != ESP_OK)
 					{
 						ESP_LOGE(TAG, "Clear Events Archive: Error %d", err);
-						goto cmd_false;
+						goto no_reboot;
 					}
 					ESP_LOGI(TAG, "Clear Events Archive");
 					break;
@@ -155,12 +155,17 @@ void app_main(void)
 					save_utc_copy();
 					clr_rst_state();
 					ESP_LOGI(TAG, "Correct UTC Counter: OK!");
+					goto no_reboot;
+				case CLR_MB_CNT_CMD:
+					ESP_LOGI(TAG, "Clear Modbus IO/Error Counts");
+					reset_mb_counts();
+					save_arch_event(CLR_CNT);
 				default:
-					goto cmd_false;
+					goto no_reboot;
 				}
 				reboot_as_deep_sleep();
 			}
-		cmd_false:
+		no_reboot:
 			vTaskDelay(pdMS_TO_TICKS(100));
 		}
 	}

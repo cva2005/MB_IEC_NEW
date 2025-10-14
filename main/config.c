@@ -13,8 +13,8 @@
 
 #define STORAGE_NAMESPACE "storage"
 static const char *TAG = "config.c";
-RTC_DATA_ATTR uint64_t mb_io_count = 0;
-RTC_DATA_ATTR uint64_t mb_err_count = 0;
+RTC_DATA_ATTR uint32_t mb_io_count = 0;
+RTC_DATA_ATTR uint32_t mb_err_count = 0;
 const char *ProjectName = "MB_IEC_NEW";
 const uint16_t VersionNum = 100;
 const config_t CfgDefault = {
@@ -231,6 +231,8 @@ esp_err_t read_config(void)
 		ESP_LOGI(TAG, "Security Code Compare True");
 	}
 	RamCfg.VerFW = VersionNum;
+	RamCfg.mbIO = mb_io_count;
+	RamCfg.mbErr = mb_err_count;
 	return ESP_OK;
 }
 
@@ -322,4 +324,10 @@ esp_err_t save_serial_key(uint16_t value)
 err_exit:
 	nvs_close(nvs_handle);
 	return err;
+}
+
+void reset_mb_counts(void)
+{
+	RamCfg.mbIO = RamCfg.mbErr =
+	mb_io_count = mb_err_count = 0;
 }

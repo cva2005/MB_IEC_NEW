@@ -11,6 +11,7 @@ typedef enum
     CLR_ARCH_CMD = 5,
     LD_UTC_CMD = 6,
     RST_CFG_START = 7,
+    CLR_MB_CNT_CMD = 8,
 } reset_state_t;
 
 void webserver_init(void);

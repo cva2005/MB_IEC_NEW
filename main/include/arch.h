@@ -1,7 +1,4 @@
 #pragma once
-#ifdef __cplusplus
- extern "C" {
-#endif
 
 #include "nvs.h"
 #include "esp_system.h"
@@ -20,6 +17,10 @@ typedef enum
     FW_FCT = 8 << SYS_EVT_SHIFFT,        /* Firmware reset to Factory */
     CFG_DF = 9 << SYS_EVT_SHIFFT,        /* Reset to Default Configuration */
     CFG_MD = 10 << SYS_EVT_SHIFFT,       /* Load Device in to Configuration Mode */
+    CLR_CNT = 11 << SYS_EVT_SHIFFT,      /* Reset Modbus IO, ERR counts */
+    CON_104 = 12 << SYS_EVT_SHIFFT,      /* Connected to IEC 104 Client */
+    CON_101 = 13 << SYS_EVT_SHIFFT,      /* Connected to IEC 101 Master */
+    DCN_IEC = 14 << SYS_EVT_SHIFFT,      /* Disconnected from IEC 101/104 Master/Client */
 } system_event_t;
 
 typedef struct
@@ -34,7 +35,3 @@ esp_err_t clear_events_arch(void);
 char *get_arch_json(char *p);
 esp_err_t save_utc_copy(void);
 esp_err_t read_utc_copy(void);
-
-#ifdef __cplusplus
-}
-#endif

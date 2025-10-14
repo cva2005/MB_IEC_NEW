@@ -13,8 +13,7 @@
 #include "esp_iec_slave.h"
 #include "config.h"
 #include "gpio_drv.h"
-
-static const char *TAG = "iec_object.slave";
+#include "arch.h"
 
 typedef struct
 {
@@ -24,6 +23,9 @@ typedef struct
     uint8_t *frame;
     uint16_t length;
 } iecs_object_t;
+
+static const char *TAG = "iec_object.slave";
+static bool iecs_connect = false;
 
 static iec_err_enum_t iecs_delete(iec_base_t *inst)
 {
@@ -231,9 +233,18 @@ bool iec_slave_is_connected(void)
 {
     bool state;
     if (slave_select == SLAVE_IEC_104_TCP)
+    {
         state = iec_socket_is_connected();
-    else
+        if (iecs_connect != state)
+            save_arch_event(state ? CON_104 : DCN_IEC);
+    }
+    else // slave_select == SLAVE_IEC_101_SER
+    {
         state = is_iec_ser_start();
+        if (iecs_connect != state)
+            save_arch_event(state ? CON_101 : DCN_IEC);
+    }
     set_slave_state_led(state);
+    iecs_connect = state;
     return state;
 }

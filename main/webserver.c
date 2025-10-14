@@ -40,6 +40,7 @@ typedef enum
 #define SER_ID "SerN"
 #define DEF_ID "dCfg"
 #define CDT_ID "cDT"
+#define CLC_ID "clrC"
 
 #define DELAY_BEFORE_RESET 	100
 #define READ_ONLY_PRM 		4
@@ -176,7 +177,7 @@ static esp_err_t cfg_rd_handler(httpd_req_t *req)
 	*p++ = '{';
 	for (int i = 0; i < PARSE_TAB_LEN; i++)
 	{
-		long var;
+		int var;
 		void *ptr = ParseTab[i].ptr;
 		switch (ParseTab[i].size)
 		{
@@ -186,14 +187,11 @@ static esp_err_t cfg_rd_handler(httpd_req_t *req)
 		case sizeof(uint16_t):
 			var = *((uint16_t *)ptr);
 			break;
-		case sizeof(uint32_t):
+		default: // sizeof(uint32_t):
 			var = *((uint32_t *)ptr);
-			break;
-		default: // sizeof(uint64_t)
-			var = *((uint64_t *)ptr);
 		}
-		p += sprintf(p, "\"%s\":%lu,", ParseTab[i].key, var);
-		ESP_LOGD(TAG, "\"%s\":%lu,", ParseTab[i].key, var);
+		p += sprintf(p, "\"%s\":%u,", ParseTab[i].key, var);
+		ESP_LOGD(TAG, "\"%s\":%u,", ParseTab[i].key, var);
 	}
 	p--; // remove last coma
 	*p++ = '}';
@@ -346,6 +344,10 @@ static esp_err_t cfg_wr_handler(httpd_req_t *req)
 	else if (cJSON_HasObjectItem(root, CLA_ID))
 	{
 		start_reset_delay(CLR_ARCH_CMD);
+	}
+	else if (cJSON_HasObjectItem(root, CLC_ID))
+	{
+		start_reset_delay(CLR_MB_CNT_CMD);
 	}
 	else if (cJSON_HasObjectItem(root, CDT_ID))
 	{

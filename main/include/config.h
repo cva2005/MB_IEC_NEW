@@ -241,8 +241,8 @@ typedef struct {
 	uint16_t tBetw;		/* Delay Between Polls, 0 - 65535 [ms] default - 100 */
 	uint16_t SerN;		/* Serial Number of Device [Read Only] */
 	uint16_t VerFW;		/* Version of FirmWare [Read Only] */
-	uint64_t mbIO;		/* MB IO count */
-	uint64_t mbErr;		/* MB Error count */
+	uint32_t mbIO;		/* MB IO count */
+	uint32_t mbErr;		/* MB Error count */
 	uint16_t crc16;		/* Control Summ */
 } config_t;
 #pragma pack()
@@ -273,14 +273,15 @@ extern parsed_t ParseTab[PARSE_TAB_LEN];
 extern slave_select_t slave_select;
 extern const char *ProjectName;
 extern const uint16_t VersionNum;
-extern RTC_DATA_ATTR uint64_t mb_io_count;
-extern RTC_DATA_ATTR uint64_t mb_err_count;
+extern RTC_DATA_ATTR uint32_t mb_io_count;
+extern RTC_DATA_ATTR uint32_t mb_err_count;
 
 esp_err_t read_config(void);
 esp_err_t write_config(void);
 esp_err_t save_serial_key(uint16_t value);
 esp_err_t write_config_default(void);
 bool is_web_server(void);
+void reset_mb_counts(void);
 
 #define IEC_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE * 2)
 #define QUEUE_NO_WAIT (0)

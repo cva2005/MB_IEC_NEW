@@ -359,7 +359,8 @@ function CL(){
 			<li><button type=submit id=sEE>Save to Device</button></ul>
 		<li class=dd><a>ARCHIVE
 			<ul><li><button type=button onclick=oM()>View Events</button>
-			<li><button type=submit id=clrA>Clear Archive</button></ul>
+			<li><button type=submit id=clrA>Clear Archive</button>
+			<li><button type=submit id=clrC>Reset I/O & Err.</button></ul>
 		<li class=dd><a>SERVICE
 			<ul><li><button disabled=true>Select new FW file...</button>
 			<li><input type=file accept=.BIN id=selFw placeholder="select file"onchange=rdFw(this)></input>
@@ -367,6 +368,8 @@ function CL(){
 			<li><button type=submit id=fcFW>Factory FW Load</button>
 			<li><button type=submit id=Rst>Reset Device</button>
 			<li><button type=submit id=SerN disabled=true>Save Serial</button></ul>
+		<li><a>I/O <input type=number size=9 step=1 class=id name=mbIO disabled=true>
+		<li><a>ERR.<input type=number size=9 step=1 class=id name=mbErr disabled=true>
 		<li><a>VER.<input type=number size=8 step=0.01 class=id name=VerFW id=ver disabled=true>
 		<li><a>S/N <input type=number size=8 step=1 min=1 max=65535 class=id name=SerN id=dev onchange=ch_num(this) disabled=true>
 		<li class="nav-right"><button type=submit id=cDT><script>CL()</script></button>
@@ -430,8 +433,9 @@ eS=["Reset reason can not be determined","Reset due to power-on event","Reset by
 "Brownout reset","Reset over SDIO","Reset by USB peripheral","Reset by JTAG","Reset due to efuse error",
 "Reset due to power glitch detected","Reset due to CPU lock up","Change to Reserved IEC Channel",
 "Firmware update","Write Configuration data","Reset Command from Browser","Load Serial in Work Mode",
-"Clear System Events Archive","Firmware roll back","Firmware reset to Factory",
-"Reset to Default Configuration","Load Device in to Configuration Mode"]
+"Clear System Events Archive","Firmware roll back","Firmware reset to Factory","Reset to Default Configuration",
+"Load Device in to Configuration Mode","Reset Modbus IO, ERR counts","Connected to IEC 104 Client",
+"Connected to IEC 101 Master","Disconnected from IEC 101/104 Master/Clien"]
 oM=function(){
 	md.classList.remove("hidden")
 	ArcT.sort((function(){return function(a, b){x=Number(a[0]);y=Number(b[0]);return (x==y?0:(x>y?-1:1))}})())
@@ -595,10 +599,10 @@ document.addEventListener('DOMContentLoaded',function(e){
 		if(!nIP||!nMSK||!nGTW)return;id=e.submitter.id
 		if(id=='sEE'){
 			fd=new FormData(form)
-			if (!confirm("Save Configuration in to Device?"))return
+			if(!confirm("Save Configuration in to Device?"))return
 			fd.delete('mT');fd.delete('SerN');fd.delete('VerFW');fd.append('tLen',js(CfgA.length))
-			fd.set('ipAdr',toInt(nIP));fd.set('ipMsk',toInt(nMSK));fd.set('ipGtw',toInt(nGTW))
-			for(i=0;i<8;i++){fd.append('iP'+i,toInt(iP[i]));fd.append('eP'+i,eP[i])}
+			fd.set('ipAdr',toInt(nIP));fd.set('ipMsk',toInt(nMSK));fd.set('ipGtw',toInt(nGTW));fd.delete('mbErr')
+			fd.delete('mbIO');for(i=0;i<8;i++){fd.append('iP'+i,toInt(iP[i]));fd.append('eP'+i,eP[i])}
 			resp=await fetch(`${host}/cfg_wr`,{method:'POST',body:js(Object.fromEntries(fd))})
 			if(resp.status!==200){alert('Response Status: '+resp.status);return}
 			i=CfgA.length
@@ -613,6 +617,9 @@ document.addEventListener('DOMContentLoaded',function(e){
 			if(id=='clrA'){
 				if(!confirm("Clear Events Archive?"))return
 				fd.append('clrA',js(1));pbt(3)
+			}else if(id=='clrC'){
+				if(!confirm("Clear Modbus I/O Statistic?"))return
+				fd.append('clrC',js(1));pbt(2)
 			}else if(id=='Rst'){
 				if(!confirm("Reset Device?"))return
 				fd.append('Res',js(1));ex=1
